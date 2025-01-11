@@ -1,0 +1,20 @@
+{
+	"node": "n8n-nodes-base.Hardcover",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": [
+		"Miscellaneous"
+	],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://hardcover.app/account/api"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.hardcover.app/"
+			}
+		]
+	}
+}
