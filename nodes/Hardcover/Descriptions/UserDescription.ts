@@ -15,15 +15,18 @@ export const userOperations: INodeProperties[] = [
 			{
 				name: 'Get User By ID',
 				value: 'getUserById',
-				description: 'Get a user by ID',
-				action: 'Get a user by ID',
+				action: 'Get a user by id',
 			},
 			{
 				name: 'Get User By Username',
 				value: 'getUserByUsername',
-				description: 'Get a user by Username',
-				action: 'Get a user by Username',
-			}
+				action: 'Get a user by username',
+			},
+			{
+				name: 'Search For Users',
+				value: 'search',
+				action: 'Search for users',
+			},
 		],
 		default: 'getUserById',
 	},
@@ -34,7 +37,7 @@ export const userFields: INodeProperties[] = [
     // getUserById //
     /////////////////
     {
-		displayName: 'User Id',
+		displayName: 'User ID',
 		name: 'userId',
 		type: 'number',
 		required: true,

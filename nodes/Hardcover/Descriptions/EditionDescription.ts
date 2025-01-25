@@ -15,14 +15,12 @@ export const editionOperations: INodeProperties[] = [
 			{
 				name: 'Get Edition By ID',
 				value: 'getEditionById',
-				description: 'Get an edition by ID',
-				action: 'Get an edition by ID',
+				action: 'Get an edition by id',
 			},
 			{
 				name: 'Get Edition(s) By Book ID',
 				value: 'getEditionsByBookId',
-				description: 'Get edition(s) by book ID',
-				action: 'Get edition(s) by book ID',
+				action: 'Get editions by book id',
 			},
 		],
 		default: 'getEditionById',
@@ -34,7 +32,7 @@ export const editionFields: INodeProperties[] = [
     // getEditionById //
     ////////////////////
     {
-		displayName: 'Edition Id',
+		displayName: 'Edition ID',
 		name: 'id',
 		type: 'number',
 		required: true,
@@ -50,7 +48,7 @@ export const editionFields: INodeProperties[] = [
     // getEditionsByBookId //
     /////////////////////////
     {
-		displayName: 'Book Id',
+		displayName: 'Book ID',
 		name: 'book_id',
 		type: 'number',
 		required: true,

@@ -15,14 +15,17 @@ export const publisherOperations: INodeProperties[] = [
 			{
 				name: 'Get Publisher By ID',
 				value: 'getPublisherById',
-				description: 'Get a publisher by ID',
-				action: 'Get a publisher by ID',
+				action: 'Get a publisher by id',
 			},
 			{
 				name: 'Get Publisher(s) By Name',
 				value: 'getPublishersByName',
-				description: 'Get publisher(s) by name',
-				action: 'Get publisher(s) by name',
+				action: 'Get publishers by name',
+			},
+			{
+				name: 'Search For Publishers',
+				value: 'search',
+				action: 'Search for publishers',
 			},
 		],
 		default: 'getPublisherById',
@@ -34,7 +37,7 @@ export const publisherFields: INodeProperties[] = [
     // getPublisherById //
     //////////////////////
     {
-		displayName: 'Publisher Id',
+		displayName: 'Publisher ID',
 		name: 'id',
 		type: 'number',
 		required: true,

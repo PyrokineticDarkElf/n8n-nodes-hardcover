@@ -108,7 +108,7 @@ export async function executeSearchOperation(
     i: number
 ): Promise<any> {
     const query = this.getNodeParameter('query', i) as string;
-    const query_type = this.getNodeParameter('operation', i) as string;
+    const query_type = this.getNodeParameter('resource', i) as string;
     const advanced = this.getNodeParameter('advanced', i) as { per_page?: number; page?: number };
     
     const variables = {

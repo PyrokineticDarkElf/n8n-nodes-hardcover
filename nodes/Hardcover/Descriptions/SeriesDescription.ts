@@ -15,14 +15,17 @@ export const seriesOperations: INodeProperties[] = [
 			{
 				name: 'Get Series By ID',
 				value: 'getSeriesById',
-				description: 'Get a series by ID',
-				action: 'Get a series by ID',
+				action: 'Get a series by id',
 			},
 			{
 				name: 'Get Series By Author ID',
 				value: 'getSeriesByAuthorId',
-				description: 'Get a series by author ID',
-				action: 'Get a series by author ID',
+				action: 'Get a series by author id',
+			},
+			{
+				name: 'Search For Series',
+				value: 'search',
+				action: 'Search for series',
 			},
 		],
 		default: 'getSeriesById',
@@ -34,7 +37,7 @@ export const seriesFields: INodeProperties[] = [
     // getSeriesById //
     ///////////////////
     {
-		displayName: 'Series Id',
+		displayName: 'Series ID',
 		name: 'id',
 		type: 'number',
 		required: true,
@@ -50,7 +53,7 @@ export const seriesFields: INodeProperties[] = [
     // getSeriesByAuthorId //
     /////////////////////////
     {
-		displayName: 'Author Id',
+		displayName: 'Author ID',
 		name: 'id',
 		type: 'number',
 		required: true,

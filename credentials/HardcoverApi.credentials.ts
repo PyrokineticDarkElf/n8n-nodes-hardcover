@@ -8,7 +8,7 @@ export class HardcoverApi implements ICredentialType {
 
 	displayName = 'Hardcover API';
 
-	documentationUrl = 'hardcover';
+	documentationUrl = 'https://docs.hardcover.app/api/getting-started/';
 
 	properties: INodeProperties[] = [
 		{

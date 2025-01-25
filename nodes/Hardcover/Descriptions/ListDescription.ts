@@ -15,26 +15,27 @@ export const listOperations: INodeProperties[] = [
 			{
 				name: 'Get List By ID',
 				value: 'getListById',
-				description: 'Get a list by ID',
-				action: 'Get a list by ID',
-			},
-			{
-				name: 'Get List(s) By User ID',
-				value: 'getListsByUserId',
-				description: 'Get list(s) by user ID',
-				action: 'Get list(s) by user ID',
-			},
-			{
-				name: 'Get List(s) By Username',
-				value: 'getListsByUsername',
-				description: 'Get list(s) by username',
-				action: 'Get list(s) by username',
+				action: 'Get a list by id',
 			},
 			{
 				name: 'Get List(s) By List Name',
 				value: 'getListsByListName',
-				description: 'Get list(s) by list ame',
-				action: 'Get list(s) by list name',
+				action: 'Get lists by list name',
+			},
+			{
+				name: 'Get List(s) By User ID',
+				value: 'getListsByUserId',
+				action: 'Get lists by user id',
+			},
+			{
+				name: 'Get List(s) By Username',
+				value: 'getListsByUsername',
+				action: 'Get lists by username',
+			},
+			{
+				name: 'Search For Lists',
+				value: 'search',
+				action: 'Search for lists',
 			},
 		],
 		default: 'getListById',
@@ -46,7 +47,7 @@ export const listFields: INodeProperties[] = [
     // getListById //
     /////////////////
     {
-		displayName: 'List Id',
+		displayName: 'List ID',
 		name: 'id',
 		type: 'number',
 		required: true,
@@ -62,7 +63,7 @@ export const listFields: INodeProperties[] = [
     // getListsByUserId //
     //////////////////////
     {
-		displayName: 'User Id',
+		displayName: 'User ID',
 		name: 'id',
 		type: 'number',
 		required: true,

@@ -1,30 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-export const searchOperations: INodeProperties[] = [
-    {
-        displayName: 'Query Type',
-        name: 'operation',
-        type: 'options',
-        noDataExpression: true,
-        displayOptions: {
-			show: {
-				resource: ['search'],
-			},
-		},
-        options: [
-			{ name: 'Author', value: 'author' },
-			{ name: 'Book', value: 'book' },
-            { name: 'Character', value: 'character' },
-			{ name: 'List', value: 'list' },
-            { name: 'Prompt', value: 'prompt' },
-			{ name: 'Publisher', value: 'publisher' },
-            { name: 'Series', value: 'series' },
-            { name: 'User', value: 'user' },
-        ],
-        default: 'book',
-    },
-];
-
 export const searchFields: INodeProperties[] = [
     {
 		displayName: 'Query',
@@ -34,7 +9,7 @@ export const searchFields: INodeProperties[] = [
 		default: '',
 		displayOptions: {
 			show: {
-                resource: ['search'],
+                operation: ['search'],
 			},
 		},
 	},
@@ -46,7 +21,7 @@ export const searchFields: INodeProperties[] = [
 		default: {},
 		displayOptions: {
 			show: {
-				resource: ['search'],
+				operation: ['search'],
 			},
 		},
 		options: [
