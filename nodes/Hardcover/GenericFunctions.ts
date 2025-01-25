@@ -1,551 +1,129 @@
-import type {
-    IExecuteFunctions,
-    IHookFunctions,
-    ILoadOptionsFunctions,
-    IRequestOptions,
-    JsonObject,
-} from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions, IHookFunctions, NodeApiError, JsonObject } from 'n8n-workflow';
+import { queries } from './Queries';
 
-export async function makeGraphQLRequest(
+interface QueryExecutorOptions {
+    operation: keyof typeof queries;
+    variables: { [key: string]: string | number | boolean };
+}
+
+
+//////////////////////////////
+// Executes a GraphQL query //
+//////////////////////////////
+export async function executeGraphQLQuery(
     this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
-    query: string,
-    variables: object,
+    options: QueryExecutorOptions,
+    itemIndex: number
 ): Promise<any> {
+    
+    const { operation, variables } = options;
+    
     try {
+        // Get the query from our queries object
+        const query = queries[operation];
+        if (!query) {
+            throw new Error(`Query not found for operation: ${operation}`);
+        }
+
+        // Get credentials
         const credentials = await this.getCredentials('hardcoverApi');
-        const personalAccessToken = credentials.personalAccessToken as string;
+        const token = credentials.personalAccessToken as string;
 
-        const options: IRequestOptions = {
-            headers: {
-                'Authorization': `Bearer ${personalAccessToken}`,
-                'Content-Type': 'application/json',
+        // Make the request
+        const response = await this.helpers.requestWithAuthentication.call(
+            this,
+            'hardcoverApi',
+            {
+                method: 'POST',
+                url: 'https://api.hardcover.app/v1/graphql',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: {
+                    query,
+                    variables,
+                },
+                json: true,
             },
-            method: 'POST',
-            body: {
-                query,
-                variables,
-            },
-            uri: 'https://api.hardcover.app/v1/graphql',
-            json: true,
-        };
+        );
 
-        return await this.helpers.requestWithAuthentication.call(this, 'hardcoverApi', options);
+        // Check for GraphQL errors
+        if (response.errors) {
+            throw new Error(response.errors[0].message);
+        }
+
+        return response.data;
     } catch (error) {
         throw new NodeApiError(this.getNode(), error as JsonObject);
     }
-}
+};
 
-export const queries = {
-    // User Queries
-    getUserByUsername: `
-        query GetUserByUsername($username: citext!) {
-            users(where: {username: {_eq: $username}}, limit: 1) {
-                id,
-                username,
-                books_count,
-                followers_count,
-                followed_users_count,
-            }
+///////////////////////////////////////////////////
+// Execute query based on resource and operation //
+///////////////////////////////////////////////////
+export async function executeResourceOperation(
+    this: IExecuteFunctions,
+    operation: string,
+    i: number
+): Promise<any> {
+    // Get all parameters defined for this node
+    const nodeParameters = this.getNode().parameters as { [key: string]: any };
+    
+    // Build variables object from node parameters
+    const variables: { [key: string]: string | number } = {};
+    
+    // Get all parameters that aren't resource or operation
+    Object.entries(nodeParameters).forEach(([key]) => {
+        if (key !== 'resource' && key !== 'operation') {
+            variables[key] = this.getNodeParameter(key, i) as string | number;
         }
-    `,
-    getUserById: `
-        query GetUserByUserId($userId: Int!) {
-            users(where: {id: {_eq: $userId}}, limit: 1) {
-                id,
-                username,
-                books_count,
-                followers_count,
-                followed_users_count,
-            }
-        }
-    `,
+    });
 
-    // Book Queries
-    getBookById: `
-        query GetBookById($id: Int!) {
-            book: books(where: {id: {_eq: $id}}) {
-                id
-                alternative_titles
-                book_series {
-                    series {
-                        id
-                        name
-                    }
-                }
-                default_audio_edition_id
-                default_cover_edition_id
-                default_ebook_edition_id
-                default_physical_edition_id
-                description
-                image {
-                    url
-                }
-                pages
-                audio_seconds
-                rating
-                ratings_count
-                release_date
-                reviews_count
-                slug
-                subtitle
-                title
-                users_count
-                users_read_count
-            }
-        }
-    `,
+    const operationName = `${operation}`;
 
-    // Books Queries
-    getBooksByTitle: `
-    query GetBooksByTitle($title: String!) {
-        books(
-            order_by: {users_read_count: desc}
-            where: {title: {_eq: $title}}
-            limit: 5
-        ) {
-            id
-            alternative_titles
-            book_series {
-                series {
-                    id
-                    name
-                }
-            }
-            default_audio_edition_id
-            default_cover_edition_id
-            default_ebook_edition_id
-            default_physical_edition_id
-            description
-            image {
-                url
-            }
-            pages
-            audio_seconds
-            rating
-            ratings_count
-            release_date
-            reviews_count
-            slug
-            subtitle
-            title
-            users_count
-            users_read_count
-        }
-    }
-`,
-    getBooksByAuthorName: `
-        query GetBooksByAuthorName($authorName: String!) {
-            authors(where: {name: {_eq: $authorName}}) {
-                name,
-                id,
-                alternate_names
-                books_count,
-                state
-                location
-                born_date
-                born_year
-                death_date
-                death_year
-                contributions(where: {contributable_type: {_eq: "Book"}}) {
-                    book {
-                        id
-                        alternative_titles
-                        book_series {
-                            series {
-                                id
-                                name
-                            }
-                        }
-                        default_audio_edition_id
-                        default_cover_edition_id
-                        default_ebook_edition_id
-                        default_physical_edition_id
-                        description
-                        image {
-                            url
-                        }
-                        pages
-                        audio_seconds
-                        rating
-                        ratings_count
-                        release_date
-                        reviews_count
-                        slug
-                        subtitle
-                        title
-                        users_count
-                        users_read_count
-                    }
-                }
-            }
-        }
-    `,
-    getBooksByAuthorId: `
-        query GetBooksByAuthorId($authorId: Int!) {
-            authors(where: {id: {_eq: $authorId}}) {
-                name,
-                id,
-                alternate_names
-                books_count,
-                state
-                location
-                born_date
-                born_year
-                death_date
-                death_year
-                contributions(where: {contributable_type: {_eq: "Book"}}) {
-                    book {
-                        id
-                        alternative_titles
-                        book_series {
-                            series {
-                                id
-                                name
-                            }
-                        }
-                        default_audio_edition_id
-                        default_cover_edition_id
-                        default_ebook_edition_id
-                        default_physical_edition_id
-                        description
-                        image {
-                            url
-                        }
-                        pages
-                        audio_seconds
-                        rating
-                        ratings_count
-                        release_date
-                        reviews_count
-                        slug
-                        subtitle
-                        title
-                        users_count
-                        users_read_count
-                    }
-                }
-            }
-        }
-    `,
-    getBooksByListId: `
-        query GetBooksByListId($id: Int!) {
-            lists(where: {id: {_eq: $id}}) {
-                name,    
-                id,
-                list_books {
-                    book {
-                        id
-                        alternative_titles
-                        book_series {
-                            series {
-                                id
-                                name
-                            }
-                        }
-                        default_audio_edition_id
-                        default_cover_edition_id
-                        default_ebook_edition_id
-                        default_physical_edition_id
-                        description
-                        image {
-                            url
-                        }
-                        pages
-                        audio_seconds
-                        rating
-                        ratings_count
-                        release_date
-                        reviews_count
-                        slug
-                        subtitle
-                        title
-                        users_count
-                        users_read_count
-                    }
-                }
-            }
-        }
-    `,
+    return await executeGraphQLQuery.call(
+        this,
+        {
+            operation: operationName as keyof typeof queries,
+            variables,
+        },
+        i
+    );
+};
 
-    // Books by status
-    getBooksByStatusAndUserId: `
-        query getBooksByStatusAndUserId($status: Int!, $userId: Int!) {
-            user_books(where: {status_id: {_eq: $status}, user_id: {_eq: $userId}}) {
-                rating,
-                    book {
-                        id
-                        alternative_titles
-                        book_series {
-                            series {
-                                id
-                                name
-                            }
-                        }
-                        default_audio_edition_id
-                        default_cover_edition_id
-                        default_ebook_edition_id
-                        default_physical_edition_id
-                        description
-                        image {
-                            url
-                        }
-                        pages
-                        audio_seconds
-                        rating
-                        ratings_count
-                        release_date
-                        reviews_count
-                        slug
-                        subtitle
-                        title
-                        users_count
-                        users_read_count
-                    }
-            }
-        }
-    `,
+////////////////////////////////////////////////////
+// Validate if an operation exists for a resource //
+////////////////////////////////////////////////////
+export function validateResourceOperation(operation: string): boolean {
+    const operationName = `${operation}`;
+    return operationName in queries;
+};
 
-    // Book Edition Queries
-    getEditionById: `
-        query GetEditionById($id: Int!) {
-            edition: editions(where: {id: {_eq: $id}}) {
-                id
-                book {
-                    id
-                    alternative_titles
-                    book_series {
-                        series {
-                            id
-                            name
-                        }
-                    }
-                    default_audio_edition_id
-                    default_cover_edition_id
-                    default_ebook_edition_id
-                    default_physical_edition_id
-                    description
-                    image {
-                        url
-                    }
-                    pages
-                    audio_seconds
-                    rating
-                    ratings_count
-                    release_date
-                    reviews_count
-                    slug
-                    subtitle
-                    title
-                    users_count
-                    users_read_count
-                }
-                country {
-                    name
-                }
-                edition_format
-                image {
-                    url
-                }
-                isbn_10
-                isbn_13
-                language {
-                    language
-                }
-                pages
-                audio_seconds
-                publisher {
-                    id
-                    name
-                    slug
-                }
-                rating
-                release_date
-                subtitle
-                title
-                users_count
-            }
-        }
-    `,
+/////////////////////////
+// Search Query Helper //
+/////////////////////////
+export async function executeSearchOperation(
+    this: IExecuteFunctions,
+    i: number
+): Promise<any> {
+    const query = this.getNodeParameter('query', i) as string;
+    const query_type = this.getNodeParameter('operation', i) as string;
+    const advanced = this.getNodeParameter('advanced', i) as { per_page?: number; page?: number };
+    
+    const variables = {
+        query,
+        query_type,
+        per_page: advanced.per_page || 25,
+        page: advanced.page || 1,
+    };
 
-    // Book Editions Queries
-    getEditionsByTitle: `
-        query GetEditionsByTitle($title: String!) {
-            editions(where: {title: {_eq: $title}}) {
-                id
-                country {
-                    name
-                }
-                edition_format
-                image {
-                    url
-                }
-                isbn_10
-                isbn_13
-                language {
-                    language
-                }
-                pages
-                audio_seconds
-                publisher {
-                    id
-                    name
-                    slug
-                }
-                rating
-                release_date
-                subtitle
-                title
-                users_count
-            }
-        }
-    `,
-    getEditionsById: `
-        query GetEditionsById($id: Int!) {
-            edition:editions(where: {id: {_eq: $id}}) {
-                id
-                country {
-                    name
-                }
-                edition_format
-                image {
-                    url
-                }
-                isbn_10
-                isbn_13
-                language {
-                    language
-                }
-                pages
-                audio_seconds
-                publisher {
-                    id
-                    name
-                    slug
-                }
-                rating
-                release_date
-                subtitle
-                title
-                users_count
-            }
-        }
-    `,
-
-    // Author Queries
-    getAuthorByName: `
-        query GetAuthorByName($name: String!) {
-            authors(where: {name: {_eq: $name}}) {
-                name,
-                id,
-                alternate_names
-                books_count,
-                state
-                location
-                born_date
-                born_year
-                death_date
-                death_year
-            }
-        }
-    `,
-    getAuthorById: `
-        query GetAuthorById($id: Int!) {
-            author: authors(where: {id: {_eq: $id}}) {
-                name,
-                id,
-                alternate_names
-                books_count,
-                state
-                location
-                born_date
-                born_year
-                death_date
-                death_year
-            }
-        }
-    `,
-
-    // Character Queries
-    getCharacterByName: `
-        query GetCharacterByName($name: String!) {
-            characters(where: {name: {_eq: $name}}) {
-                name,
-                id,
-                state,
-                biography,
-                created_at,
-                updated_at,
-                image_id,
-                __typename,
-                cached_tags,
-                openlibrary_url,
-                canonical_books_count,
-            }
-        }
-    `,
-
-    // Lists Queries
-    getListsByUserId: `
-        query getListsByUserId($userId: Int!) {
-            users(where: {id: {_eq: $userId}}) {
-                id,
-                username,
-                lists { 
-                    name,
-                    id,
-                    books_count,
-                }
-            }
-        }
-    `,
-    getListsByUserName: `
-        query getListsByUserName($username: citext!) {
-            users(where: {username: {_eq: $username}}) {
-                id,
-                username,
-                lists { 
-                    name,
-                    id,
-                    books_count,
-                }
-            }
-        }
-    `,
-    getListsByListName: `
-    query GetBooksByListName($name: String!) {
-        lists(where: {name: {_eq: $name}}) {
-            name,    
-            id,
-            list_books {
-                book {
-                    title,
-                    id,
-                    slug,
-                    users_read_count,
-                    contributions {
-                        author_id,
-                        author {
-                            id,
-                            name
-                        }
-                    }
-                }
-            }
-        }
-    }
-`,
-    // Search Query
-    search: `
-        query Search($query: String!, $queryBy: String!, $perPage: Int!, $page: Int!) {
-            search(
-                query: $query,
-                query_type: $queryBy,
-                per_page: $perPage,
-                page: $page
-            ) {
-                results
-            }
-        }
-    `,
-}; 
+    return await executeGraphQLQuery.call(
+        this,
+        {
+            operation: 'search',
+            variables,
+        },
+        i
+    );
+};
